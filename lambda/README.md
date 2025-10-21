@@ -13,7 +13,7 @@ pip install -r requirements.txt
 
 ### 2. Configure Credentials
 
-Your `.env` file should already have these values (keep it in `.cursorignore`):
+Your `.env` file should already have these values (already in `.gitignore`):
 
 ```
 OBP_BASE_URL=https://apisandbox.openbankproject.com
@@ -156,11 +156,11 @@ https://apisandbox.openbankproject.com
 - `test_fetch_data.py` - Main test script
 - `config.py` - Configuration loader from .env
 - `requirements.txt` - Python dependencies
-- `.env` - Your credentials (in `.cursorignore`)
+- `.env` - Your credentials (in `.gitignore`)
 
 ## Security
 
-- `.env` file is in `.cursorignore` - never committed to git
+- `.env` file is in `.gitignore` - never committed to git
 - CSV files with `sample_transactions_*.csv` pattern are also ignored
 - Only example templates (`env.example`) are tracked in git
 

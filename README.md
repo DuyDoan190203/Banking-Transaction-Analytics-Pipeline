@@ -132,7 +132,7 @@ Open Bank Project API
 
 ## Security
 
-* `.env` file is in `.cursorignore` - never committed to git
+* `.env` file is in `.gitignore` - never committed to git
 * CSV output files are ignored
 * Only example templates are tracked in version control
 

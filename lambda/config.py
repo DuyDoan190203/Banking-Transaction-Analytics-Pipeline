@@ -1,6 +1,6 @@
 """
 Configuration loader for Open Bank Project API credentials
-Loads from .env file (make sure it's in .cursorignore)
+Loads from .env file (protected by .gitignore)
 """
 
 import os

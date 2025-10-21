@@ -3,7 +3,7 @@ Simple test script for Open Bank Project API
 Tests authentication and fetches sample data to CSV
 
 Prerequisites:
-    1. Create .env file with OBP credentials (add to .cursorignore)
+    1. Create .env file with OBP credentials 
     2. pip install -r requirements.txt
     
 Usage:

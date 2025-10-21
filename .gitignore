@@ -4,6 +4,9 @@
 .env.*.local
 *.env
 
+# Cursor IDE
+.cursorignore
+
 # Python
 __pycache__/
 *.py[cod]
