@@ -1,0 +1,23 @@
+# Terraform Variables Configuration
+# 
+# SECURITY: All sensitive values should be set via environment variables:
+#   $env:TF_VAR_aws_access_key = "your_access_key"
+#   $env:TF_VAR_aws_secret_key = "your_secret_key"
+#   $env:TF_VAR_aws_account_id = "123456789012"
+#   $env:TF_VAR_obp_username = "your_username"
+#   $env:TF_VAR_obp_password = "your_password"
+#   $env:TF_VAR_obp_consumer_key = "your_consumer_key"
+#
+# This file should only contain non-sensitive configuration
+
+# AWS Configuration (non-sensitive)
+aws_region = "eu-north-1"
+
+# OBP API Configuration (non-sensitive)
+obp_base_url             = "https://apisandbox.openbankproject.com"
+obp_api_version          = "v5.1.0"
+obp_directlogin_endpoint = "https://apisandbox.openbankproject.com/my/logins/direct"
+
+# Schedule Configuration
+schedule_expression = "rate(1 day)"  # Run daily
+# schedule_expression = "cron(0 2 * * ? *)"  # Run at 2 AM UTC daily

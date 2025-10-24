@@ -4,16 +4,16 @@ End-to-end data pipeline for banking transaction analysis and fraud detection us
 
 ## Project Structure
 
-* `lambda/` - Python code for data extraction
-* `terraform/` - Infrastructure as Code
+* `terraform/`: Terraform configuration files
+* `lambda/`: Python code for the Lambda function
 * `dbt/` - Data transformation models
-* `.gitignore` - Git ignore file
+* `.gitignore`: Git ignore file
 
 ## Prerequisites
 
 * AWS account
 * Terraform installed (version >= 1.0.0)
-* Python 3.11
+* Python 3.10
 * Open Bank Project API credentials
 
 ## Setup
@@ -22,9 +22,9 @@ End-to-end data pipeline for banking transaction analysis and fraud detection us
 
 2. Set up your AWS credentials:
    * Create an AWS IAM user with appropriate permissions
-   * Configure your AWS CLI or set the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables
+   * Configure your AWS CLI or set environment variables
 
-3. Create a `.env` file in the `lambda/` directory with the following content:
+3. Create a `.env` file with the following content:
    ```
    OBP_BASE_URL=https://apisandbox.openbankproject.com
    OBP_API_VERSION=v5.1.0
@@ -34,71 +34,41 @@ End-to-end data pipeline for banking transaction analysis and fraud detection us
    OBP_DIRECTLOGIN_ENDPOINT=https://apisandbox.openbankproject.com/my/logins/direct
    ```
 
-4. Install Python dependencies:
+4. Package the Lambda function:
    ```
-   cd lambda
-   pip install -r requirements.txt
+   cd terraform
+   .\build_lambda.ps1
+   ```
+
+## Deployment
+
+1. Set environment variables for Terraform:
+   ```powershell
+   $env:TF_VAR_aws_access_key = "your_aws_access_key"
+   $env:TF_VAR_aws_secret_key = "your_aws_secret_key"
+   $env:TF_VAR_aws_account_id = "your_account_id"
+   $env:TF_VAR_obp_username = "your_username"
+   $env:TF_VAR_obp_password = "your_password"
+   $env:TF_VAR_obp_consumer_key = "your_consumer_key"
+   ```
+
+2. Initialize Terraform:
+   ```
+   cd terraform
+   terraform init
+   ```
+
+3. Review the Terraform plan:
+   ```
+   terraform plan
+   ```
+
+4. Apply the Terraform configuration:
+   ```
+   terraform apply
    ```
 
 ## Usage
-
-### Test API Connection
-
-Test the Open Bank Project API connection:
-
-```bash
-cd lambda
-python test_fetch_data.py
-```
-
-### Generate Hybrid Dataset
-
-Generate hybrid dataset with real API data and synthetic transactions:
-
-```bash
-cd lambda
-python hybrid_data_pipeline.py
-```
-
-The pipeline will:
-1. Fetch real banks from OBP API
-2. Fetch real accounts from OBP API
-3. Generate 100 synthetic transactions per account using Faker
-4. Save to CSV files with clear data source labeling
-
-Output files:
-* `hybrid_banks_YYYYMMDD_HHMMSS.csv` - Real banks (data_source: REAL_API)
-* `hybrid_accounts_YYYYMMDD_HHMMSS.csv` - Real accounts (data_source: REAL_API)
-* `hybrid_transactions_YYYYMMDD_HHMMSS.csv` - Synthetic transactions (data_source: SYNTHETIC)
-
-### Deploy Infrastructure
-
-Deploy AWS infrastructure using Terraform:
-
-```bash
-cd terraform
-terraform init
-terraform plan
-terraform apply
-```
-
-## Data Pipeline Architecture
-
-```
-Open Bank Project API
-        ↓
-   AWS Lambda (Python)
-        ↓
-   S3 Data Lake (Raw)
-        ↓
-   dbt Transformations
-        ↓
-   Data Warehouse
-        ↓
-   BI Dashboards
-```
-
-## Technology Stack
 
 | Component | Technology |
 |-----------|------------|
@@ -110,17 +80,15 @@ Open Bank Project API
 | Infrastructure | Terraform |
 | Language | Python 3.11 |
 
-## Data Models
+The Lambda function will automatically fetch banking data and generate synthetic transactions, storing them in the S3 bucket. The data is stored in CSV format with date partitioning:
 
 ### Staging Layer
 * `stg_transactions` - Cleaned transaction data
 * `stg_accounts` - Cleaned account data
 * `stg_banks` - Cleaned bank data
-
-### Marts Layer
-* `dim_account` - Account dimension
-* `fact_transactions` - Transaction fact table
-* `fct_fraud_scores` - Fraud detection model
+* `raw/banks/YYYY/MM/DD/banks_YYYYMMDD_HHMMSS.csv`
+* `raw/accounts/YYYY/MM/DD/accounts_YYYYMMDD_HHMMSS.csv`
+* `raw/transactions/YYYY/MM/DD/transactions_YYYYMMDD_HHMMSS.csv`
 
 ## Key Features
 
@@ -130,28 +98,46 @@ Open Bank Project API
 * Clear data lineage tracking
 * Privacy-compliant synthetic test data
 
-## Security
-
-* `.env` file is in `.gitignore` - never committed to git
-* CSV output files are ignored
-* Only example templates are tracked in version control
+The pipeline runs automatically on a daily schedule via AWS EventBridge.
 
 ## Cleanup
 
 To remove all created resources:
 
-```bash
-cd terraform
+```
 terraform destroy
 ```
 
-## About
+## Architecture
 
-This project demonstrates production data engineering patterns:
-* REST API integration with banking systems
-* Hybrid data approach (real structure + synthetic data)
-* Infrastructure as Code with Terraform
-* Data transformation with dbt
-* Statistical fraud detection
-* End-to-end data pipeline architecture
+```
+┌─────────────────────┐
+│  EventBridge        │  Daily Schedule
+│  (Scheduler)        │
+└──────────┬──────────┘
+           │ Trigger
+           ▼
+┌─────────────────────┐
+│  Lambda Function    │  1. Authenticate with OBP API
+│                     │  2. Fetch real banks & accounts
+│                     │  3. Generate synthetic transactions
+└──────────┬──────────┘
+           │ Upload CSV
+           ▼
+┌─────────────────────┐
+│  S3 Data Lake       │  Date-partitioned storage
+│  (Raw Layer)        │  raw/{dataset}/YYYY/MM/DD/
+└─────────────────────┘
+```
+
+## Technology Stack
+
+| Component | Technology |
+|-----------|------------|
+| Data Source | Open Bank Project API |
+| Extraction | AWS Lambda (Python 3.10) |
+| Storage | AWS S3 |
+| Orchestration | AWS EventBridge |
+| Infrastructure | Terraform |
+
 
